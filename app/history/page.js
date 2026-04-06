@@ -21,7 +21,33 @@ function formatDate(iso) {
   })
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+function formatDayKey(iso) {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+}
+
+function formatDayLabel(iso) {
+  return new Date(iso).toLocaleDateString('th-TH', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  })
+}
+
+function groupByDay(records) {
+  const order = []
+  const map = {}
+  for (const rec of records) {
+    const key = formatDayKey(rec.timestamp)
+    if (!map[key]) {
+      map[key] = { label: formatDayLabel(rec.timestamp), items: [] }
+      order.push(key)
+    }
+    map[key].items.push(rec)
+  }
+  return order.map(k => map[k])
+}
+
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = 'http://localhost:5000'
 
 export default function HistoryPage() {
   const [records, setRecords]     = useState([])
@@ -75,74 +101,90 @@ export default function HistoryPage() {
             <p className="text-gray-600">ยังไม่มีประวัติการเช็คชื่อ</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {records.map((rec) => (
-              <div
-                key={rec.id}
-                className="border border-yellow-700/20 rounded-2xl overflow-hidden"
-              >
-                {/* Row header */}
-                <button
-                  className="w-full px-5 py-4 flex flex-wrap items-center gap-3 text-left hover:bg-white/3 transition-colors"
-                  onClick={() => setExpandedId(expandedId === rec.id ? null : rec.id)}
-                >
-                  {/* House badge */}
-                  <span className="flex-shrink-0 px-3 py-1 bg-yellow-600/20 border border-yellow-600/30 rounded-lg text-yellow-300 text-xs font-bold">
-                    {rec.houseName}
+          <div className="space-y-8">
+            {groupByDay(records).map((group) => (
+              <div key={group.label}>
+                {/* Day header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-sm font-bold text-yellow-400/80 tracking-wide">
+                    {group.label}
                   </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-yellow-700/30 to-transparent" />
+                  <span className="text-xs text-gray-600">{group.items.length} รายการ</span>
+                </div>
 
-                  {/* Type badge */}
-                  <span className={`flex-shrink-0 px-2.5 py-1 border rounded-lg text-xs font-medium ${
-                    TYPE_BG[rec.airdropType] || 'bg-gray-500/15 text-gray-300 border-gray-500/30'
-                  }`}>
-                    {rec.airdropType}
-                  </span>
-
-                  {/* Stats */}
-                  <div className="flex gap-3 text-xs font-semibold">
-                    <span className="text-emerald-400">{rec.present} มา</span>
-                    <span className="text-amber-400">{rec.leave} ลา</span>
-                    <span className="text-red-400">{rec.absent} ขาด</span>
-                  </div>
-
-                  <div className="ml-auto flex items-center gap-3">
-                    <span className="text-gray-600 text-xs hidden sm:block">{formatDate(rec.timestamp)}</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${expandedId === rec.id ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                {/* Records for this day */}
+                <div className="space-y-3">
+                  {group.items.map((rec) => (
+                    <div
+                      key={rec.id}
+                      className="border border-yellow-700/20 rounded-2xl overflow-hidden"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </button>
+                      {/* Row header */}
+                      <button
+                        className="w-full px-5 py-4 flex flex-wrap items-center gap-3 text-left hover:bg-white/3 transition-colors"
+                        onClick={() => setExpandedId(expandedId === rec.id ? null : rec.id)}
+                      >
+                        {/* House badge */}
+                        <span className="flex-shrink-0 px-3 py-1 bg-yellow-600/20 border border-yellow-600/30 rounded-lg text-yellow-300 text-xs font-bold">
+                          {rec.houseName}
+                        </span>
 
-                {/* Expanded member list */}
-                {expandedId === rec.id && (
-                  <div className="px-5 pb-5 border-t border-yellow-700/15">
-                    <p className="text-gray-600 text-xs mt-3 mb-3 sm:hidden">{formatDate(rec.timestamp)}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-                      {rec.members.map((m, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between bg-gray-800/40 rounded-xl px-4 py-2.5"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-md bg-gray-700/60 flex items-center justify-center text-xs text-gray-500 font-bold flex-shrink-0">{i + 1}</span>
-                            <span className="text-gray-200 text-sm">{m.name}</span>
-                          </div>
-                          {m.status ? (
-                            <span className={`text-xs font-bold ${STATUS_COLOR[m.status]}`}>
-                              {STATUS_LABEL[m.status]}
-                            </span>
-                          ) : (
-                            <span className="text-gray-600 text-xs">ไม่ได้เช็ค</span>
-                          )}
+                        {/* Type badge */}
+                        <span className={`flex-shrink-0 px-2.5 py-1 border rounded-lg text-xs font-medium ${
+                          TYPE_BG[rec.airdropType] || 'bg-gray-500/15 text-gray-300 border-gray-500/30'
+                        }`}>
+                          {rec.airdropType}
+                        </span>
+
+                        {/* Stats */}
+                        <div className="flex gap-3 text-xs font-semibold">
+                          <span className="text-emerald-400">{rec.present} มา</span>
+                          <span className="text-amber-400">{rec.leave} ลา</span>
+                          <span className="text-red-400">{rec.absent} ขาด</span>
                         </div>
-                      ))}
+
+                        <div className="ml-auto flex items-center gap-3">
+                          <span className="text-gray-600 text-xs hidden sm:block">{formatDate(rec.timestamp)}</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${expandedId === rec.id ? 'rotate-180' : ''}`}
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </button>
+
+                      {/* Expanded member list */}
+                      {expandedId === rec.id && (
+                        <div className="px-5 pb-5 border-t border-yellow-700/15">
+                          <p className="text-gray-600 text-xs mt-3 mb-3 sm:hidden">{formatDate(rec.timestamp)}</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                            {rec.members.map((m, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between bg-gray-800/40 rounded-xl px-4 py-2.5"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-md bg-gray-700/60 flex items-center justify-center text-xs text-gray-500 font-bold flex-shrink-0">{i + 1}</span>
+                                  <span className="text-gray-200 text-sm">{m.name}</span>
+                                </div>
+                                {m.status ? (
+                                  <span className={`text-xs font-bold ${STATUS_COLOR[m.status]}`}>
+                                    {STATUS_LABEL[m.status]}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-600 text-xs">ไม่ได้เช็ค</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             ))}
           </div>
