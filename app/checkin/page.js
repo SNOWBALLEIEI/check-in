@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 
 // ─── DATA ──────────────────────────────────────────────────────────────────────
 
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-const API_URL = 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+// const API_URL = 'http://localhost:5000'
 
 // Styling applied to every house (fetched from DB at runtime)
 const HOUSE_STYLE = {

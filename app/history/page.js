@@ -46,8 +46,8 @@ function groupByDay(records) {
   return order.map(k => map[k])
 }
 
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-const API_URL = 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+// const API_URL = 'http://localhost:5000'
 
 export default function HistoryPage() {
   const [records, setRecords]     = useState([])
