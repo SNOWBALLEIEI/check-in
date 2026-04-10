@@ -21,13 +21,13 @@ function calcPracticeFine(pLeave, pAbsent, pLeaveProof) {
   return pLeave * PRACTICE_LEAVE_FINE + pAbsent * PRACTICE_ABSENT_FINE + pLeaveProof * PRACTICE_LEAVE_PROOF_FINE
 }
 
-// Returns the Monday 00:00:00 of the current week
+// Returns the Monday 06:00:00 of the current week
 function getWeekStart() {
   const now = new Date()
   const day = now.getDay() // 0=Sun,1=Mon,...
   const diff = day === 0 ? 6 : day - 1 // days since Monday
   const monday = new Date(now)
-  monday.setHours(0, 0, 0, 0)
+  monday.setHours(6, 0, 0, 0)
   monday.setDate(monday.getDate() - diff)
   return monday
 }
@@ -220,7 +220,7 @@ export default function MembersPage() {
           <div className="flex items-center gap-3 mt-1 flex-wrap">
             <p className="text-gray-500 text-sm">{totalCount} คน</p>
             <span className="text-gray-700 text-xs">|</span>
-            <p className="text-gray-600 text-xs">สัปดาห์นี้ <span className="text-yellow-600">{weekRange}</span> <span className="text-gray-700">(รีเซ็ตทุกวันจันทร์)</span></p>
+            <p className="text-gray-600 text-xs">สัปดาห์นี้ <span className="text-yellow-600">{weekRange}</span> <span className="text-gray-700">(รีเซ็ตทุกวันจันทร์ 06.00 น.)</span></p>
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-4" />
         </header>

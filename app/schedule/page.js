@@ -29,20 +29,23 @@ function formatLabel(dateStr) {
   return `${dd}/${m}`
 }
 
-// Returns ['YYYY-MM-DD', …] for Mon–Sun of the current week
-function getCurrentWeekDates() {
+// Returns ['YYYY-MM-DD', …] for Mon–Sun of a given week (offset=0 current, -1 last week, etc.)
+function getWeekDates(offset = 0) {
   const now = new Date()
-  const day = now.getDay() // 0=Sun,1=Mon,...
+  const day = now.getDay()
   const diff = day === 0 ? 6 : day - 1
   const monday = new Date(now)
-  monday.setHours(12, 0, 0, 0)
-  monday.setDate(monday.getDate() - diff)
+  monday.setHours(6, 0, 0, 0)
+  monday.setDate(monday.getDate() - diff + offset * 7)
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday)
     d.setDate(d.getDate() + i)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })
 }
+
+// Keep old name as alias used elsewhere
+function getCurrentWeekDates() { return getWeekDates(0) }
 
 function formatWeekLabel(dates) {
   if (!dates.length) return ''
@@ -124,12 +127,18 @@ function Cell({ status, checkBg = 'bg-emerald-600' }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function SchedulePage() {
   const [houses,  setHouses]  = useState([])
-  const [dates,   setDates]   = useState(() => getCurrentWeekDates())   // ['YYYY-MM-DD', …] Mon–Sun current week
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [dates,   setDates]   = useState(() => getWeekDates(0))   // ['YYYY-MM-DD', …] Mon–Sun
   const [aMap,    setAMap]    = useState({})   // dk → airdropType → houseId → name → status
   const [pMap,    setPMap]    = useState({})   // dk → houseId → name → status
   const [fineMap, setFineMap] = useState({})   // 'houseId::name' → { leave, absent, pL, pA, pLP }
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
+
+  // Recompute dates when week offset changes
+  useEffect(() => {
+    setDates(getWeekDates(weekOffset))
+  }, [weekOffset])
 
   useEffect(() => {
     Promise.all([
@@ -216,11 +225,40 @@ export default function SchedulePage() {
 
         {/* Header */}
         <header className="mb-5 max-w-7xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
-            ตารางเช็คชื่อ
-          </h1>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+              ตารางเช็คชื่อ
+            </h1>
+            {/* Week navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setWeekOffset(w => w - 1)}
+                className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-700 bg-gray-800/60 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              >
+                ◀ สัปดาห์ก่อน
+              </button>
+              {weekOffset < 0 && (
+                <button
+                  onClick={() => setWeekOffset(0)}
+                  className="px-3 py-1.5 rounded-xl text-sm font-medium border border-yellow-600/40 bg-yellow-600/10 text-yellow-300 hover:bg-yellow-600/20 transition-colors"
+                >
+                  สัปดาห์นี้
+                </button>
+              )}
+              {weekOffset < 0 && (
+                <button
+                  onClick={() => setWeekOffset(w => w + 1)}
+                  className="px-3 py-1.5 rounded-xl text-sm font-medium border border-gray-700 bg-gray-800/60 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                >
+                  สัปดาห์ถัดไป ►
+                </button>
+              )}
+            </div>
+          </div>
           <p className="text-gray-500 text-sm mt-1">
             {formatWeekLabel(dates)}
+            {weekOffset === 0 && <span className="ml-2 text-yellow-600/70 text-xs">สัปดาห์นี้</span>}
+            {weekOffset < 0  && <span className="ml-2 text-gray-600 text-xs">{Math.abs(weekOffset)} สัปดาห์ที่แล้ว</span>}
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-4" />
         </header>
