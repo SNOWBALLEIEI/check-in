@@ -47,94 +47,6 @@ function formatMoney(n) {
   return `${n / 1_000}K`
 }
 
-function FineModal({ member, onClose }) {
-  const airdropFine  = calcFine(member.leave, member.absent)
-  const practiceFine = calcPracticeFine(member.pLeave, member.pAbsent, member.pLeaveProof)
-  const total        = airdropFine + practiceFine
-  const overLeave    = Math.max(0, member.leave - LEAVE_FREE)
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-gray-900 border border-gray-700/50 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h3 className="text-lg font-bold text-white">{member.name}</h3>
-            <p className="text-gray-500 text-xs mt-0.5">{member.houseName}</p>
-          </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300 transition-colors p-1 rounded-lg text-lg leading-none">✕</button>
-        </div>
-
-        {/* Airdrop section */}
-        <div className="bg-yellow-500/8 border border-yellow-700/30 rounded-2xl p-4 mb-3">
-          <p className="text-yellow-400 text-xs font-semibold uppercase tracking-wide mb-3">\u0e41\u0e2d\u0e23\u0e4c\u0e14\u0e23\u0e2d\u0e1b</p>
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
-            <span>\u0e21\u0e32 / \u0e25\u0e32 / \u0e02\u0e32\u0e14</span>
-            <span className="text-gray-300">{member.present} / {member.leave} / {member.absent}</span>
-          </div>
-          {overLeave > 0 && (
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-400">\u0e25\u0e32\u0e40\u0e01\u0e34\u0e19 ({overLeave} \u0e04\u0e23\u0e31\u0e49\u0e07 × 500K)</span>
-              <span className="text-amber-300 font-semibold">{formatMoney(overLeave * LEAVE_FINE)}</span>
-            </div>
-          )}
-          {member.absent > 0 && (
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-400">\u0e02\u0e32\u0e14 ({member.absent} \u0e04\u0e23\u0e31\u0e49\u0e07 × 1M)</span>
-              <span className="text-red-300 font-semibold">{formatMoney(member.absent * ABSENT_FINE)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm font-bold border-t border-gray-700/40 pt-2 mt-2">
-            <span className="text-gray-300">\u0e04\u0e48\u0e32\u0e1b\u0e23\u0e31\u0e1a\u0e41\u0e2d\u0e23\u0e4c\u0e14\u0e23\u0e2d\u0e1b</span>
-            <span className={airdropFine > 0 ? 'text-red-400' : 'text-gray-600'}>{airdropFine > 0 ? formatMoney(airdropFine) : '-'}</span>
-          </div>
-        </div>
-
-        {/* Practice section */}
-        <div className="bg-indigo-500/8 border border-indigo-700/30 rounded-2xl p-4 mb-5">
-          <p className="text-indigo-400 text-xs font-semibold uppercase tracking-wide mb-3">\u0e0b\u0e49\u0e2d\u0e21</p>
-          {member.pLeave === 0 && member.pLeaveProof === 0 && member.pAbsent === 0 ? (
-            <p className="text-gray-600 text-sm">\u0e44\u0e21\u0e48\u0e21\u0e35\u0e04\u0e48\u0e32\u0e1b\u0e23\u0e31\u0e1a</p>
-          ) : (
-            <>
-              {member.pLeave > 0 && (
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">\u0e25\u0e32 ({member.pLeave} \u0e04\u0e23\u0e31\u0e49\u0e07 × 3M)</span>
-                  <span className="text-amber-300 font-semibold">{formatMoney(member.pLeave * PRACTICE_LEAVE_FINE)}</span>
-                </div>
-              )}
-              {member.pLeaveProof > 0 && (
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">\u0e25\u0e32+\u0e2b\u0e25\u0e31\u0e01\u0e10\u0e32\u0e19 ({member.pLeaveProof} \u0e04\u0e23\u0e31\u0e49\u0e07 × 1.5M)</span>
-                  <span className="text-teal-300 font-semibold">{formatMoney(member.pLeaveProof * PRACTICE_LEAVE_PROOF_FINE)}</span>
-                </div>
-              )}
-              {member.pAbsent > 0 && (
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-400">\u0e02\u0e32\u0e14 ({member.pAbsent} \u0e04\u0e23\u0e31\u0e49\u0e07 × 5M)</span>
-                  <span className="text-red-300 font-semibold">{formatMoney(member.pAbsent * PRACTICE_ABSENT_FINE)}</span>
-                </div>
-              )}
-            </>
-          )}
-          <div className="flex justify-between text-sm font-bold border-t border-gray-700/40 pt-2 mt-2">
-            <span className="text-gray-300">\u0e04\u0e48\u0e32\u0e1b\u0e23\u0e31\u0e1a\u0e0b\u0e49\u0e2d\u0e21</span>
-            <span className={practiceFine > 0 ? 'text-red-400' : 'text-gray-600'}>{practiceFine > 0 ? formatMoney(practiceFine) : '-'}</span>
-          </div>
-        </div>
-
-        {/* Total */}
-        <div className="flex justify-between items-center px-1">
-          <span className="text-gray-200 font-bold">\u0e04\u0e48\u0e32\u0e1b\u0e23\u0e31\u0e1a\u0e23\u0e27\u0e21</span>
-          <span className={`text-xl font-black ${total > 0 ? 'text-red-400' : 'text-gray-600'}`}>
-            {total > 0 ? formatMoney(total) : '-'}
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function AllFinesModal({ houses, onClose }) {
   const finedByHouse = houses
     .map(h => ({
@@ -210,9 +122,8 @@ export default function MembersPage() {
   const [houses, setHouses]     = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
-  const [sortBy, setSortBy]        = useState('order')
-  const [weekRange, setWeekRange]   = useState('')
-  const [fineModal, setFineModal]   = useState(null)
+  const [sortBy, setSortBy]            = useState('order')
+  const [weekRange, setWeekRange]       = useState('')
   const [showAllFines, setShowAllFines] = useState(false)
 
   useEffect(() => {
@@ -490,12 +401,7 @@ export default function MembersPage() {
 
                             <div className="w-16 text-right flex-shrink-0 pt-0.5">
                               {hasFine ? (
-                                <button
-                                  onClick={() => setFineModal({ ...m, houseName: house.name })}
-                                  className="text-red-400 font-bold hover:text-red-300 hover:underline transition-colors"
-                                >
-                                  {formatMoney(fine)}
-                                </button>
+                                <span className="text-red-400 font-bold">{formatMoney(fine)}</span>
                               ) : (
                                 <span className="text-gray-700 text-xs">-</span>
                               )}
@@ -513,7 +419,6 @@ export default function MembersPage() {
       </div>
     </div>
 
-      {fineModal && <FineModal member={fineModal} onClose={() => setFineModal(null)} />}
       {showAllFines && <AllFinesModal houses={houses} onClose={() => setShowAllFines(false)} />}
     </>
   )
