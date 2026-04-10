@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-// const API_URL = 'http://localhost:5000'
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = 'http://localhost:5000'
 // ─── Fine constants ─────────────────────────────────────────────────────────
 const LEAVE_FREE             = 3
 const LEAVE_FINE             = 500_000
@@ -78,7 +78,7 @@ function getDateCols(isPractice) {
 
 // House background / header colours (cycles if more than 7 houses)
 const HOUSE_ROW_BG = [
-  'bg-rose-950/40',
+  'bg-violet-950/40',
   'bg-fuchsia-950/40',
   'bg-sky-950/40',
   'bg-emerald-950/40',
@@ -87,7 +87,7 @@ const HOUSE_ROW_BG = [
   'bg-teal-950/40',
 ]
 const HOUSE_HDR = [
-  'bg-rose-800/60 text-rose-200',
+  'bg-violet-800/60 text-violet-200',
   'bg-fuchsia-800/60 text-fuchsia-200',
   'bg-sky-800/60 text-sky-200',
   'bg-emerald-800/60 text-emerald-200',
@@ -98,7 +98,7 @@ const HOUSE_HDR = [
 
 // Solid colour used for the present ✓ square
 const HOUSE_CHECK_BG = [
-  'bg-rose-600',
+  'bg-violet-600',
   'bg-fuchsia-600',
   'bg-sky-500',
   'bg-emerald-600',
@@ -115,9 +115,9 @@ function Cell({ status, checkBg = 'bg-emerald-600' }) {
       <span className="text-white font-bold text-sm leading-none">✓</span>
     </span>
   )
-  if (status === 'leave')    return <span className="text-amber-400 font-semibold text-xs">ลา</span>
-  if (status === 'leave_proof') return <span className="text-amber-300 font-semibold text-[11px]">ลา+หลักฐาน</span>
-  if (status === 'absent')   return <span className="text-red-400 font-semibold text-xs">ขาด</span>
+  if (status === 'leave')    return <span className="text-amber-400 font-semibold text-md">ลา</span>
+  if (status === 'leave_proof') return <span className="text-amber-300 font-semibold text-md">ลา+หลักฐาน</span>
+  if (status === 'absent')   return <span className="text-red-400 font-semibold text-md">ขาด</span>
   return <span className="text-gray-600">−</span>
 }
 
@@ -220,7 +220,7 @@ export default function SchedulePage() {
             ตารางเช็คชื่อ
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {formatWeekLabel(dates)} · วันพฤหัสและศุกร์มีคอลัมน์ซ้อมเพิ่ม
+            {formatWeekLabel(dates)}
           </p>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-4" />
         </header>
@@ -250,7 +250,7 @@ export default function SchedulePage() {
                     >
                       {formatLabel(dk)}
                       {isPracticeDay(dk) && (
-                        <span className="ml-1 text-[11px] text-indigo-400 font-normal">(ซ้อม)</span>
+                        <span className="ml-1 text-[11px] text-indigo-400 font-normal"></span>
                       )}
                     </th>
                   ))}
