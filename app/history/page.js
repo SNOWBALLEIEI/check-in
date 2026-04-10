@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from 'react'
 
-const STATUS_LABEL = { present: 'มา', leave: 'ลา', absent: 'ขาด' }
+const STATUS_LABEL = { present: 'มา', leave: 'ลา', leave_proof: 'ลา+หลักฐาน', absent: 'ขาด' }
 const STATUS_COLOR = {
-  present: 'text-emerald-400',
-  leave:   'text-amber-400',
-  absent:  'text-red-400',
+  present:    'text-emerald-400',
+  leave:      'text-amber-400',
+  leave_proof:'text-amber-400',
+  absent:     'text-red-400',
 }
 const TYPE_BG = {
   'Airdrop 3 ทุ่ม': 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
   'Airdrop Purge':   'bg-orange-500/15 text-orange-300 border-orange-500/30',
   'Airdrop ตี 1':   'bg-sky-500/15 text-sky-300 border-sky-500/30',
+  'วันพฤหัสบดี':    'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+  'วันศุกร์':       'bg-violet-500/15 text-violet-300 border-violet-500/30',
 }
 
 function formatDate(iso) {
@@ -50,18 +53,25 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 // const API_URL = 'http://localhost:5000'
 
 export default function HistoryPage() {
-  const [records, setRecords]     = useState([])
+  const [records, setRecords]       = useState([])
   const [expandedId, setExpandedId] = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState(null)
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState(null)
+  const [filter, setFilter]         = useState('all') // 'all' | 'airdrop' | 'practice'
+  const [page, setPage]             = useState(0)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/attendance/history`)
-      .then(res => {
-        if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ')
-        return res.json()
+    Promise.all([
+      fetch(`${API_URL}/api/attendance/history`).then(r => { if (!r.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ'); return r.json() }),
+      fetch(`${API_URL}/api/practice/history`).then(r => { if (!r.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ'); return r.json() }),
+    ])
+      .then(([airdrop, practice]) => {
+        const airdropTagged  = airdrop.map(r  => ({ ...r,  source: 'airdrop',  typeLabel: r.airdropType }))
+        const practiceTagged = practice.map(r => ({ ...r,  source: 'practice', typeLabel: r.practiceDay }))
+        const merged = [...airdropTagged, ...practiceTagged]
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        setRecords(merged)
       })
-      .then(data => setRecords(data))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
@@ -82,11 +92,34 @@ export default function HistoryPage() {
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
                 ประวัติเช็คชื่อ
               </h1>
-              <p className="text-gray-500 text-sm mt-1">{records.length} รายการ</p>
+              <p className="text-gray-500 text-sm mt-1">{filter === 'all' ? records.length : records.filter(r => r.source === filter).length} รายการ</p>
             </div>
           </div>
           <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mt-4" />
         </header>
+
+        {/* Filter tabs */}
+        {!loading && !error && (
+          <div className="flex gap-2 mb-6">
+            {[{key:'all',label:'ทั้งหมด'},{key:'airdrop',label:'แอร์ดรอป'},{key:'practice',label:'ซ้อม'}].map(f => (
+              <button
+                key={f.key}
+                onClick={() => { setFilter(f.key); setPage(0) }}
+                className={`px-4 py-1.5 rounded-xl text-sm font-medium border transition-all duration-150 ${
+                  filter === f.key
+                    ? f.key === 'practice'
+                      ? 'bg-indigo-600/25 text-indigo-300 border-indigo-500/50'
+                      : f.key === 'airdrop'
+                        ? 'bg-yellow-600/20 text-yellow-300 border-yellow-600/40'
+                        : 'bg-white/10 text-white border-white/20'
+                    : 'bg-transparent text-gray-500 border-gray-800 hover:text-gray-300 hover:border-gray-700'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-28">
@@ -100,9 +133,17 @@ export default function HistoryPage() {
           <div className="text-center py-28">
             <p className="text-gray-600">ยังไม่มีประวัติการเช็คชื่อ</p>
           </div>
-        ) : (
+        ) : (() => {
+          const filtered = filter === 'all' ? records : records.filter(r => r.source === filter)
+          if (filtered.length === 0) return (
+            <div className="text-center py-28">
+              <p className="text-gray-600">ไม่มีประวัติ</p>
+            </div>
+          )
+          return (
+          <>
           <div className="space-y-8">
-            {groupByDay(records).map((group) => (
+            {groupByDay(filtered).slice(page * 7, page * 7 + 7).map((group) => (
               <div key={group.label}>
                 {/* Day header */}
                 <div className="flex items-center gap-3 mb-3">
@@ -130,11 +171,18 @@ export default function HistoryPage() {
                           {rec.houseName}
                         </span>
 
+                        {/* Source badge */}
+                        {rec.source === 'practice' && (
+                          <span className="flex-shrink-0 px-2.5 py-1 border rounded-lg text-xs font-medium bg-indigo-500/10 text-indigo-400 border-indigo-500/30">
+                            ซ้อม
+                          </span>
+                        )}
+
                         {/* Type badge */}
                         <span className={`flex-shrink-0 px-2.5 py-1 border rounded-lg text-xs font-medium ${
-                          TYPE_BG[rec.airdropType] || 'bg-gray-500/15 text-gray-300 border-gray-500/30'
+                          TYPE_BG[rec.typeLabel] || 'bg-gray-500/15 text-gray-300 border-gray-500/30'
                         }`}>
-                          {rec.airdropType}
+                          {rec.typeLabel}
                         </span>
 
                         {/* Stats */}
@@ -188,7 +236,47 @@ export default function HistoryPage() {
               </div>
             ))}
           </div>
-        )}
+          {/* Pagination */}
+          {(() => {
+            const totalPages = Math.ceil(groupByDay(filtered).length / 7)
+            if (totalPages <= 1) return null
+            return (
+              <div className="flex items-center justify-center gap-3 mt-8">
+                <button
+                  onClick={() => { setPage(p => p - 1); setExpandedId(null) }}
+                  disabled={page === 0}
+                  className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-800 text-gray-400 hover:text-gray-200 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  ← ก่อนหน้า
+                </button>
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setPage(i); setExpandedId(null) }}
+                      className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${
+                        i === page
+                          ? 'bg-yellow-600/25 text-yellow-300 border border-yellow-600/40'
+                          : 'text-gray-600 hover:text-gray-300 border border-transparent hover:border-gray-700'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => { setPage(p => p + 1); setExpandedId(null) }}
+                  disabled={page >= totalPages - 1}
+                  className="px-4 py-2 rounded-xl text-sm font-medium border border-gray-800 text-gray-400 hover:text-gray-200 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  หน้าถัดไป →
+                </button>
+              </div>
+            )
+          })()}
+          </>
+          )
+        })()}
       </div>
     </div>
   )

@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { href: '/checkin', label: 'เช็คชื่อแอร์ดรอป' },
-  { href: '/history', label: 'ประวัติเช็คชื่อ'   },
-  { href: '/members', label: 'รายชื่อสมาชิก'     },
+  { href: '/checkin',  label: 'เช็คชื่อแอร์ดรอป' },
+  { href: '/practice', label: 'เช็คชื่อซ้อม'      },
+  { href: '/history',  label: 'ประวัติเช็คชื่อ'   },
+  { href: '/members',  label: 'รายชื่อสมาชิก'     },
 ]
 
 export default function Navbar() {
