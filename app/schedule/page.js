@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-// const API_URL = 'http://localhost:5000'
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = 'http://localhost:5000'
 // ─── Fine constants ─────────────────────────────────────────────────────────
 const LEAVE_FREE             = 3
 const LEAVE_FINE             = 500_000
@@ -96,14 +96,29 @@ const HOUSE_HDR = [
   'bg-teal-800/60 text-teal-200',
 ]
 
+// Solid colour used for the present ✓ square
+const HOUSE_CHECK_BG = [
+  'bg-rose-600',
+  'bg-fuchsia-600',
+  'bg-sky-500',
+  'bg-emerald-600',
+  'bg-red-600',
+  'bg-amber-500',
+  'bg-teal-500',
+]
+
 // ─── Cell component ──────────────────────────────────────────────────────────
-function Cell({ status }) {
-  if (!status)               return <span className="text-gray-700 select-none">−</span>
-  if (status === 'present')  return <span className="text-emerald-400 font-bold text-sm">✓</span>
-  if (status === 'leave')    return <span className="text-amber-400 font-semibold text-[11px]">ลา</span>
-  if (status === 'leave_proof') return <span className="text-amber-300 font-semibold text-[10px]">ลา+หลักฐาน</span>
-  if (status === 'absent')   return <span className="text-red-400 font-semibold text-[11px]">ขาด</span>
-  return <span className="text-gray-700">−</span>
+function Cell({ status, checkBg = 'bg-emerald-600' }) {
+  if (!status)               return <span className="text-gray-600 select-none">−</span>
+  if (status === 'present')  return (
+    <span className={`inline-flex items-center justify-center rounded w-6 h-6 ${checkBg}`}>
+      <span className="text-white font-bold text-sm leading-none">✓</span>
+    </span>
+  )
+  if (status === 'leave')    return <span className="text-amber-400 font-semibold text-xs">ลา</span>
+  if (status === 'leave_proof') return <span className="text-amber-300 font-semibold text-[11px]">ลา+หลักฐาน</span>
+  if (status === 'absent')   return <span className="text-red-400 font-semibold text-xs">ขาด</span>
+  return <span className="text-gray-600">−</span>
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -211,19 +226,19 @@ export default function SchedulePage() {
         </header>
 
         <div className="overflow-x-auto rounded-2xl border border-gray-800/70 shadow-2xl">
-            <table className="text-[11px] border-collapse w-full" style={{ tableLayout: 'fixed' }}>
+            <table className="text-sm border-collapse w-full" style={{ tableLayout: 'fixed' }}>
 
               {/* ── Header ─────────────────────────────────────────────── */}
               <thead>
                 {/* Row 1: date spans */}
                 <tr>
-                  <th rowSpan={2} className="sticky left-0 z-20 border border-gray-700 bg-gray-800 py-2 text-gray-400 whitespace-nowrap text-center" style={{ width: 60, minWidth: 60 }}>
+                  <th rowSpan={2} className="sticky left-0 z-20 border border-gray-700 bg-gray-800 py-2 text-gray-400 whitespace-nowrap text-center" style={{ width: 76, minWidth: 76 }}>
                     บ้าน
                   </th>
-                  <th rowSpan={2} className="sticky left-[60px] z-20 border border-gray-700 bg-gray-800 py-2 text-gray-400 text-center" style={{ width: 28, minWidth: 28 }}>
+                  <th rowSpan={2} className="sticky left-[76px] z-20 border border-gray-700 bg-gray-800 py-2 text-gray-400 text-center" style={{ width: 34, minWidth: 34 }}>
                     #
                   </th>
-                  <th rowSpan={2} className="sticky left-[88px] z-20 border border-gray-700 bg-gray-800 px-2 py-2 text-gray-400 whitespace-nowrap text-left" style={{ width: 120, minWidth: 120 }}>
+                  <th rowSpan={2} className="sticky left-[110px] z-20 border border-gray-700 bg-gray-800 px-2 py-2 text-gray-400 whitespace-nowrap text-left" style={{ width: 150, minWidth: 150 }}>
                     ชื่อสมาชิก
                   </th>
                   {dateCols.map(({ dk, cols }) => (
@@ -235,11 +250,11 @@ export default function SchedulePage() {
                     >
                       {formatLabel(dk)}
                       {isPracticeDay(dk) && (
-                        <span className="ml-1 text-[9px] text-indigo-400 font-normal">(ซ้อม)</span>
+                        <span className="ml-1 text-[11px] text-indigo-400 font-normal">(ซ้อม)</span>
                       )}
                     </th>
                   ))}
-                  <th rowSpan={2} className="sticky right-0 z-20 border border-gray-700 bg-gray-800 px-1 py-1.5 text-red-400 whitespace-nowrap text-center" style={{ width: 54, minWidth: 54 }}>
+                  <th rowSpan={2} className="sticky right-0 z-20 border border-gray-700 bg-gray-800 px-1 py-1.5 text-red-400 whitespace-nowrap text-center" style={{ width: 64, minWidth: 64 }}>
                     รวม
                   </th>
                 </tr>
@@ -250,7 +265,7 @@ export default function SchedulePage() {
                     cols.map(col => (
                       <th
                         key={`${dk}-${col.key}`}
-                        style={{ width: col.type === 'practice' ? 36 : 32, minWidth: col.type === 'practice' ? 36 : 32 }}
+                        style={{ width: col.type === 'practice' ? 46 : 42, minWidth: col.type === 'practice' ? 46 : 42 }}
                         className={`border border-gray-700 px-0 py-1 text-center font-medium whitespace-nowrap
                           ${isPracticeDay(dk) ? 'bg-indigo-950/30' : 'bg-gray-800/70'} ${col.color}`}
                       >
@@ -279,22 +294,22 @@ export default function SchedulePage() {
                         {idx === 0 && (
                           <td
                             rowSpan={house.members.length}
-                            className={`sticky left-0 z-10 border border-gray-700 px-0 py-1 text-center font-bold text-[10px] align-middle whitespace-nowrap ${hdrCls}`}
-                            style={{ width: 60, minWidth: 60 }}
+                            className={`sticky left-0 z-10 border border-gray-700 px-0 py-1 text-center font-bold text-xs align-middle whitespace-nowrap ${hdrCls}`}
+                            style={{ width: 76, minWidth: 76 }}
                           >
                             {house.name}
                           </td>
                         )}
 
                         {/* Member # */}
-                        <td className={`sticky left-[60px] z-10 border border-gray-700 px-0 py-0.5 text-center text-gray-500 ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`}
-                          style={{ width: 28, minWidth: 28 }}>
+                        <td className={`sticky left-[76px] z-10 border border-gray-700 px-0 py-1 text-center text-gray-500 ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`}
+                          style={{ width: 34, minWidth: 34 }}>
                           {idx + 1}
                         </td>
 
                         {/* Member name */}
-                        <td className={`sticky left-[88px] z-10 border border-gray-700 px-1.5 py-0.5 text-gray-100 font-medium whitespace-nowrap overflow-hidden text-ellipsis ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`}
-                          style={{ width: 120, minWidth: 120, maxWidth: 120 }}>
+                        <td className={`sticky left-[110px] z-10 border border-gray-700 px-2 py-1 text-gray-100 font-medium whitespace-nowrap overflow-hidden text-ellipsis ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`}
+                          style={{ width: 150, minWidth: 150, maxWidth: 150 }}>
                           {name}
                         </td>
 
@@ -313,14 +328,14 @@ export default function SchedulePage() {
                                 className={`border border-gray-700/30 px-0 py-0.5 text-center
                                   ${col.type === 'practice' ? 'bg-indigo-950/20' : ''}`}
                               >
-                                <Cell status={status} />
+                                <Cell status={status} checkBg={HOUSE_CHECK_BG[hi % HOUSE_CHECK_BG.length]} />
                               </td>
                             )
                           })
                         )}
 
                         {/* Total fine */}
-                        <td className={`sticky right-0 z-10 border border-gray-700 px-1 py-0.5 text-center whitespace-nowrap ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`} style={{ width: 54, minWidth: 54 }}>
+                        <td className={`sticky right-0 z-10 border border-gray-700 px-1 py-1 text-center whitespace-nowrap ${HOUSE_ROW_BG[hi % HOUSE_ROW_BG.length]}`} style={{ width: 64, minWidth: 64 }}>
                           {tf > 0
                             ? <span className="text-red-400 font-black">{fineStr(tf)}</span>
                             : <span className="text-gray-700">−</span>
