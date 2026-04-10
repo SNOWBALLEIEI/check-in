@@ -336,19 +336,40 @@ export default function SchedulePage() {
             </table>
         </div>
 
-        {/* Fine legend */}
+        {/* Fine rules */}
         <div className="mt-5 max-w-7xl mx-auto">
-          <div className="bg-gray-900/50 border border-gray-800/60 rounded-2xl px-5 py-3">
-            <p className="text-gray-600 text-[11px] uppercase tracking-widest font-semibold mb-2">สัญลักษณ์</p>
-            <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs">
-              <span className="flex items-center gap-1.5 text-emerald-400"><span className="font-bold">✓</span> มา</span>
-              <span className="flex items-center gap-1.5 text-amber-400"><span className="font-semibold">ลา</span></span>
-              <span className="flex items-center gap-1.5 text-amber-300"><span className="font-semibold">ลา+หลักฐาน</span></span>
-              <span className="flex items-center gap-1.5 text-red-400"><span className="font-semibold">ขาด</span></span>
-              <span className="flex items-center gap-1.5 text-gray-600"><span>−</span> ยังไม่เช็ค</span>
-              <span className="ml-auto flex items-center gap-1.5 text-gray-500">
-                ค่าปรับ: ลาเกิน 3 ครั้ง=<span className="text-amber-400">500K</span> / ขาด=<span className="text-red-400">1M</span> / ขาดซ้อม=<span className="text-red-400">5M</span>
-              </span>
+          <div className="bg-gray-900/60 border border-gray-700/30 rounded-2xl px-5 py-4">
+            <p className="text-gray-500 text-xs uppercase tracking-wide font-semibold mb-3">กฎค่าปรับ</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm mb-3">
+              <p className="text-yellow-500/80 text-xs font-semibold w-full">แอร์ดรอป</p>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                <span className="text-gray-400">ลาฟรี 3 ครั้ง</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                <span className="text-gray-400">ลาเกิน 3 ครั้ง ปรับครั้งละ <span className="text-amber-300 font-bold">500K</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
+                <span className="text-gray-400">ขาด ปรับครั้งละ <span className="text-red-300 font-bold">1M</span></span>
+              </div>
+            </div>
+            <div className="h-px bg-gray-800 mb-3" />
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              <p className="text-indigo-400/80 text-xs font-semibold w-full">ซ้อม</p>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                <span className="text-gray-400">ลา ปรับครั้งละ <span className="text-amber-300 font-bold">3M</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-teal-400 flex-shrink-0" />
+                <span className="text-gray-400">ลา+หลักฐาน ปรับครั้งละ <span className="text-amber-300 font-bold">1.5M</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
+                <span className="text-gray-400">ขาด ปรับครั้งละ <span className="text-red-300 font-bold">5M</span></span>
+              </div>
             </div>
           </div>
         </div>
